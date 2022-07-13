@@ -1,0 +1,15 @@
+no-auto-timestamps=false
+no-hooks=true
+no-tests=true
+add-global-variants=true
+add-panic-variants=true
+no-context=true
+no-rows-affected=false
+
+[mysql]
+dbname="estl"
+host="the-db.c5balohade6x.ap-southeast-1.rds.amazonaws.com"
+port=3306
+user="admin"
+pass="taptaptap"
+sslmode="false"
