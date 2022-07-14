@@ -76,6 +76,9 @@ func (h *employeeHandler) ProcessCSV(file multipart.File) (int, error) {
 				cols := strings.Split(s, ",")
 
 				salary, _ := strconv.ParseFloat(strings.Split(cols[3], "\n")[0], 64)
+				if salary < 0 {
+					return errors.New(fmt.Sprintf("Invalid employee field: Salary is < 0.0 for employee where id = %v", cols[0]))
+				}
 
 				if err := h.employeesDAO.AddEmployee(txn, models.Employee{
 					ID:     cols[0],
