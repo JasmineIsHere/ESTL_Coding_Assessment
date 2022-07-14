@@ -114,9 +114,7 @@ func (h *employeeHandler) ProcessCSV(file multipart.File) (int, error) {
 func (h *employeeHandler) get(c *gin.Context) {
 	var minSalary, maxSalary null.Float64
 	var sort, order null.String
-
-	var limit int = 30
-	var offset int = 0
+	var limit, offset int
 
 	minSalaryString, present := c.GetQuery("minSalary")
 	if present && minSalaryString != "" {
@@ -147,31 +145,48 @@ func (h *employeeHandler) get(c *gin.Context) {
 			order = null.StringFrom("asc")
 		} else if symbol == "-" {
 			order = null.StringFrom("desc")
+		} else {
+			c.Error(errors.New("Invalid data format: Order should be represented by %2B (+) (ascending) or - (descending)"))
+			c.JSON(http.StatusBadRequest, c.Errors.Last())
+			return
 		}
 
 		col := sortString[1:]
 		if col != "id" && col != "name" && col != "login" && col != "salary" {
 			// invalid sort key
-			order = null.String{}
+			c.Error(errors.New("Invalid data format: Only columns \"id\", \"name\", \"login\" or \"salary\" can be sorted"))
+			c.JSON(http.StatusBadRequest, c.Errors.Last())
+			return
 		} else {
 			sort = null.StringFrom(col)
 		}
 	}
 
+	var err error
 	limitString, present := c.GetQuery("limit")
 	if present && limitString != "" {
-		limit, _ = strconv.Atoi(limitString)
+		limit, err = strconv.Atoi(limitString)
+		if err != nil {
+			c.Error(errors.New("Invalid data format: limit should be an integer"))
+			c.JSON(http.StatusBadRequest, c.Errors.Last())
+			return
+		}
 	}
 
 	offsetString, present := c.GetQuery("offset")
 	if present && offsetString != "" {
-		offset, _ = strconv.Atoi(offsetString)
+		offset, err = strconv.Atoi(offsetString)
+		if err != nil {
+			c.Error(errors.New("Invalid data format: offset should be an integer"))
+			c.JSON(http.StatusBadRequest, c.Errors.Last())
+			return
+		}
 	}
 
 	employeeSlice, err := h.employeesDAO.GetAll(boil.GetDB(), minSalary, maxSalary, sort, order, limit, offset)
 	if err != nil {
 		c.Error(err)
-		c.JSON(http.StatusNotFound, c.Errors.Last())
+		c.JSON(http.StatusBadRequest, c.Errors.Last())
 	}
 	c.JSON(http.StatusOK, &employeeSlice)
 }
