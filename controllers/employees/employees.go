@@ -2,6 +2,7 @@ package employees
 
 import (
 	"awesomeProject/daos"
+	"awesomeProject/domains"
 	"awesomeProject/models"
 	"awesomeProject/utils/db"
 	"bufio"
@@ -115,6 +116,8 @@ func (h *employeeHandler) get(c *gin.Context) {
 	var minSalary, maxSalary null.Float64
 	var sort, order null.String
 	var limit, offset int
+	limit = 30
+	offset = 0
 
 	minSalaryString, present := c.GetQuery("minSalary")
 	if present && minSalaryString != "" {
@@ -139,7 +142,7 @@ func (h *employeeHandler) get(c *gin.Context) {
 	}
 
 	sortString, present := c.GetQuery("sort")
-	if present && sortString != "" { // TODO: assuming the value "+name" is passed in as "%2Bname" (add in README)
+	if present && sortString != "" {
 		symbol := sortString[:1]
 		if symbol == "+" {
 			order = null.StringFrom("asc")
@@ -188,5 +191,20 @@ func (h *employeeHandler) get(c *gin.Context) {
 		c.Error(err)
 		c.JSON(http.StatusBadRequest, c.Errors.Last())
 	}
-	c.JSON(http.StatusOK, &employeeSlice)
+
+	var employeeList []domains.Employee
+	for _, employee := range *employeeSlice {
+		e := domains.Employee{
+			ID:     employee.ID,
+			Name:   employee.Name,
+			Login:  employee.Login,
+			Salary: employee.Salary.Float64,
+		}
+		employeeList = append(employeeList, e)
+	}
+
+	response := &domains.AllEmployeeResp{
+		Results: employeeList,
+	}
+	c.JSON(http.StatusOK, &response)
 }
