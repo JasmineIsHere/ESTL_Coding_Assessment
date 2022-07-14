@@ -163,7 +163,7 @@ func (h *employeeHandler) get(c *gin.Context) {
 		limit, _ = strconv.Atoi(limitString)
 	}
 
-	offsetString, present := c.GetQuery("limit")
+	offsetString, present := c.GetQuery("offset")
 	if present && offsetString != "" {
 		offset, _ = strconv.Atoi(offsetString)
 	}
