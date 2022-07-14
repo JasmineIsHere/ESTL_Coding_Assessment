@@ -18,7 +18,7 @@ func NewEmployeesDAO() *employeesDAO {
 
 func (dao *employeesDAO) AddEmployee(exec boil.Executor, employee models.Employee) error {
 
-	err := employee.Insert(exec, boil.Infer())
+	err := employee.Upsert(exec, boil.Infer(), boil.Infer())
 	if err != nil {
 		return err
 	}

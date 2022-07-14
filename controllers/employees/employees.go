@@ -53,6 +53,7 @@ func (h *employeeHandler) uploadCSV(c *gin.Context) {
 
 		if err != nil {
 			c.Error(err)
+			c.JSON(http.StatusBadRequest, c.Errors.Last())
 			return
 		}
 		csv.Close()
