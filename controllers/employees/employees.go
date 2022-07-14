@@ -221,12 +221,11 @@ func (h *employeeHandler) uploadCSV(c *gin.Context) {
 
 		if err != nil {
 			c.Error(err)
-			c.JSON(http.StatusBadRequest, c.Errors.Last())
-			return
+			c.JSON(http.StatusBadRequest, gin.H{fmt.Sprintf("Error uploading %v", file.Filename): c.Errors})
 		}
 		csv.Close()
 	}
-	c.JSON(http.StatusOK, gin.H{"message": fmt.Sprintf("Number of employees inserted : %v", employeesAdded)})
+	c.JSON(http.StatusOK, gin.H{"Success": fmt.Sprintf("Number of employees inserted : %v", employeesAdded)})
 }
 
 func (h *employeeHandler) ProcessCSV(file multipart.File) (int, error) {
