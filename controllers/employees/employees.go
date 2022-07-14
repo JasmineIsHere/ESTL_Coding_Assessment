@@ -3,8 +3,11 @@ package employees
 import (
 	"awesomeProject/daos"
 	"awesomeProject/models"
+	"awesomeProject/utils/db"
 	"bufio"
+	"errors"
 	"fmt"
+	"io"
 	"mime/multipart"
 	"net/http"
 	"strconv"
@@ -60,34 +63,37 @@ func (h *employeeHandler) uploadCSV(c *gin.Context) {
 func (h *employeeHandler) ProcessCSV(file multipart.File) (int, error) {
 	br := bufio.NewReader(file)
 	employeesAdded := 0
-	for {
-		s, err := br.ReadString('\n')
-		if err != nil {
-			return employeesAdded, err
-		}
 
-		if len(s) == 0 || s[0] != '#' {
-			cols := strings.Split(s, ",")
-
-			salary, _ := strconv.ParseFloat(strings.Split(cols[3], "\n")[0], 64)
-
-			if err := h.employeesDAO.AddEmployee(boil.GetDB(), models.Employee{
-				ID:     cols[0],
-				Login:  null.StringFrom(cols[1]),
-				Name:   null.StringFrom(cols[2]),
-				Salary: null.Float64From(salary),
-			}); err != nil {
-				return employeesAdded, err
+	if err := db.WithTxn(func(txn boil.Transactor) (err error) {
+		for {
+			s, eofErr := br.ReadString('\n')
+			if eofErr != nil && !errors.Is(eofErr, io.EOF) {
+				return eofErr
 			}
-			employeesAdded++
-		}
-	}
 
-	// if err := utils.WithTxn(func(txn boil.Transactor) (err error) {
-	//
-	// }); err != nil {
-	// 	return 0, err
-	// }
+			if len(s) == 0 || s[0] != '#' {
+				cols := strings.Split(s, ",")
+
+				salary, _ := strconv.ParseFloat(strings.Split(cols[3], "\n")[0], 64)
+
+				if err := h.employeesDAO.AddEmployee(txn, models.Employee{
+					ID:     cols[0],
+					Login:  null.StringFrom(cols[1]),
+					Name:   null.StringFrom(cols[2]),
+					Salary: null.Float64From(salary),
+				}); err != nil {
+					return err
+				}
+				employeesAdded++
+			}
+			if errors.Is(eofErr, io.EOF) {
+				break
+			}
+		}
+		return
+	}); err != nil {
+		return 0, err
+	}
 
 	return employeesAdded, nil
 }
