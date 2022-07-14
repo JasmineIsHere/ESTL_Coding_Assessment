@@ -35,6 +35,7 @@ func NewHandler(employeeDAO daos.EmployeesDAO) *employeeHandler {
 func (h *employeeHandler) RouteGroup(r *gin.Engine) {
 	rg := r.Group("/users")
 	rg.POST("/upload", h.uploadCSV)
+	rg.GET("", h.get)
 }
 
 func (h *employeeHandler) uploadCSV(c *gin.Context) {
@@ -46,6 +47,7 @@ func (h *employeeHandler) uploadCSV(c *gin.Context) {
 		csv, err := file.Open()
 		if err != nil {
 			c.Error(err)
+			c.JSON(http.StatusBadRequest, c.Errors.Last())
 			return
 		}
 		success, err := h.ProcessCSV(csv)
@@ -107,4 +109,69 @@ func (h *employeeHandler) ProcessCSV(file multipart.File) (int, error) {
 	}
 
 	return employeesAdded, nil
+}
+
+func (h *employeeHandler) get(c *gin.Context) {
+	var minSalary, maxSalary null.Float64
+	var sort, order null.String
+
+	var limit int = 30
+	var offset int = 0
+
+	minSalaryString, present := c.GetQuery("minSalary")
+	if present && minSalaryString != "" {
+		minSalaryFloat64, err := strconv.ParseFloat(minSalaryString, 64)
+		if err != nil {
+			c.Error(err)
+			c.JSON(http.StatusBadRequest, c.Errors.Last())
+			return
+		}
+		minSalary = null.Float64From(minSalaryFloat64)
+	}
+
+	maxSalaryString, present := c.GetQuery("maxSalary")
+	if present && maxSalaryString != "" {
+		maxSalaryFloat64, err := strconv.ParseFloat(maxSalaryString, 64)
+		if err != nil {
+			c.Error(err)
+			c.JSON(http.StatusBadRequest, c.Errors.Last())
+			return
+		}
+		maxSalary = null.Float64From(maxSalaryFloat64)
+	}
+
+	sortString, present := c.GetQuery("sort")
+	if present && sortString != "" { // TODO: assuming the value "+name" is passed in as "%2Bname" (add in README)
+		symbol := sortString[:1]
+		if symbol == "+" {
+			order = null.StringFrom("asc")
+		} else if symbol == "-" {
+			order = null.StringFrom("desc")
+		}
+
+		col := sortString[1:]
+		if col != "id" && col != "name" && col != "login" && col != "salary" {
+			// invalid sort key
+			order = null.String{}
+		} else {
+			sort = null.StringFrom(col)
+		}
+	}
+
+	limitString, present := c.GetQuery("limit")
+	if present && limitString != "" {
+		limit, _ = strconv.Atoi(limitString)
+	}
+
+	offsetString, present := c.GetQuery("limit")
+	if present && offsetString != "" {
+		offset, _ = strconv.Atoi(offsetString)
+	}
+
+	employeeSlice, err := h.employeesDAO.GetAll(boil.GetDB(), minSalary, maxSalary, sort, order, limit, offset)
+	if err != nil {
+		c.Error(err)
+		c.JSON(http.StatusNotFound, c.Errors.Last())
+	}
+	c.JSON(http.StatusOK, &employeeSlice)
 }
