@@ -24,8 +24,8 @@ import (
 // Employee is an object representing the database table.
 type Employee struct {
 	ID     string       `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Login  null.String  `boil:"login" json:"login,omitempty" toml:"login" yaml:"login,omitempty"`
-	Name   null.String  `boil:"name" json:"name,omitempty" toml:"name" yaml:"name,omitempty"`
+	Login  string       `boil:"login" json:"login" toml:"login" yaml:"login"`
+	Name   string       `boil:"name" json:"name" toml:"name" yaml:"name"`
 	Salary null.Float64 `boil:"salary" json:"salary,omitempty" toml:"salary" yaml:"salary,omitempty"`
 
 	R *employeeR `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -81,30 +81,6 @@ func (w whereHelperstring) NIN(slice []string) qm.QueryMod {
 	return qm.WhereNotIn(fmt.Sprintf("%s NOT IN ?", w.field), values...)
 }
 
-type whereHelpernull_String struct{ field string }
-
-func (w whereHelpernull_String) EQ(x null.String) qm.QueryMod {
-	return qmhelper.WhereNullEQ(w.field, false, x)
-}
-func (w whereHelpernull_String) NEQ(x null.String) qm.QueryMod {
-	return qmhelper.WhereNullEQ(w.field, true, x)
-}
-func (w whereHelpernull_String) LT(x null.String) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.LT, x)
-}
-func (w whereHelpernull_String) LTE(x null.String) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.LTE, x)
-}
-func (w whereHelpernull_String) GT(x null.String) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.GT, x)
-}
-func (w whereHelpernull_String) GTE(x null.String) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.GTE, x)
-}
-
-func (w whereHelpernull_String) IsNull() qm.QueryMod    { return qmhelper.WhereIsNull(w.field) }
-func (w whereHelpernull_String) IsNotNull() qm.QueryMod { return qmhelper.WhereIsNotNull(w.field) }
-
 type whereHelpernull_Float64 struct{ field string }
 
 func (w whereHelpernull_Float64) EQ(x null.Float64) qm.QueryMod {
@@ -131,13 +107,13 @@ func (w whereHelpernull_Float64) IsNotNull() qm.QueryMod { return qmhelper.Where
 
 var EmployeeWhere = struct {
 	ID     whereHelperstring
-	Login  whereHelpernull_String
-	Name   whereHelpernull_String
+	Login  whereHelperstring
+	Name   whereHelperstring
 	Salary whereHelpernull_Float64
 }{
 	ID:     whereHelperstring{field: "`employees`.`id`"},
-	Login:  whereHelpernull_String{field: "`employees`.`login`"},
-	Name:   whereHelpernull_String{field: "`employees`.`name`"},
+	Login:  whereHelperstring{field: "`employees`.`login`"},
+	Name:   whereHelperstring{field: "`employees`.`name`"},
 	Salary: whereHelpernull_Float64{field: "`employees`.`salary`"},
 }
 
@@ -507,6 +483,7 @@ func (o EmployeeSlice) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 
 var mySQLEmployeeUniqueColumns = []string{
 	"id",
+	"login",
 }
 
 // Upsert attempts an insert using an executor, and does an update or ignore on conflict.

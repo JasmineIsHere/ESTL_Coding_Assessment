@@ -72,18 +72,22 @@ func (h *employeeHandler) ProcessCSV(file multipart.File) (int, error) {
 				return eofErr
 			}
 
-			if len(s) == 0 || s[0] != '#' {
+			if len(s) > 0 && s[0] != '#' {
 				cols := strings.Split(s, ",")
 
-				salary, _ := strconv.ParseFloat(strings.Split(cols[3], "\n")[0], 64)
-				if salary < 0 {
-					return errors.New(fmt.Sprintf("Invalid employee field: Salary is < 0.0 for employee where id = %v", cols[0]))
+				if len(cols) != 4 {
+					return errors.New(fmt.Sprintf("Missing employee fields: ID, login, name and salary fields are all required"))
+				}
+
+				salary, err := strconv.ParseFloat(strings.TrimSuffix(cols[3], "\n"), 64)
+				if err != nil || salary < 0 {
+					return errors.New(fmt.Sprintf("Invalid employee field: Salary should be a decimal that is > 0.0 for employee where id = %v", cols[0]))
 				}
 
 				if err := h.employeesDAO.AddEmployee(txn, models.Employee{
 					ID:     cols[0],
-					Login:  null.StringFrom(cols[1]),
-					Name:   null.StringFrom(cols[2]),
+					Login:  cols[1],
+					Name:   cols[2],
 					Salary: null.Float64From(salary),
 				}); err != nil {
 					return err
