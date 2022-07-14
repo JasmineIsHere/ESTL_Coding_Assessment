@@ -102,6 +102,9 @@ func (h *employeeHandler) ProcessCSV(file multipart.File) (int, error) {
 	}); err != nil {
 		return 0, err
 	}
+	if employeesAdded == 0 {
+		return 0, errors.New(fmt.Sprintf("Employees Added is 0 : empty file was uploaded"))
+	}
 
 	return employeesAdded, nil
 }
