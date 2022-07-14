@@ -23,10 +23,10 @@ import (
 
 // Employee is an object representing the database table.
 type Employee struct {
-	ID     uint         `boil:"id" json:"id" toml:"id" yaml:"id"`
+	ID     string       `boil:"id" json:"id" toml:"id" yaml:"id"`
 	Login  null.String  `boil:"login" json:"login,omitempty" toml:"login" yaml:"login,omitempty"`
 	Name   null.String  `boil:"name" json:"name,omitempty" toml:"name" yaml:"name,omitempty"`
-	Salary null.Float32 `boil:"salary" json:"salary,omitempty" toml:"salary" yaml:"salary,omitempty"`
+	Salary null.Float64 `boil:"salary" json:"salary,omitempty" toml:"salary" yaml:"salary,omitempty"`
 
 	R *employeeR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L employeeL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -58,22 +58,22 @@ var EmployeeTableColumns = struct {
 
 // Generated where
 
-type whereHelperuint struct{ field string }
+type whereHelperstring struct{ field string }
 
-func (w whereHelperuint) EQ(x uint) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.EQ, x) }
-func (w whereHelperuint) NEQ(x uint) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.NEQ, x) }
-func (w whereHelperuint) LT(x uint) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.LT, x) }
-func (w whereHelperuint) LTE(x uint) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.LTE, x) }
-func (w whereHelperuint) GT(x uint) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.GT, x) }
-func (w whereHelperuint) GTE(x uint) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.GTE, x) }
-func (w whereHelperuint) IN(slice []uint) qm.QueryMod {
+func (w whereHelperstring) EQ(x string) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.EQ, x) }
+func (w whereHelperstring) NEQ(x string) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.NEQ, x) }
+func (w whereHelperstring) LT(x string) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.LT, x) }
+func (w whereHelperstring) LTE(x string) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.LTE, x) }
+func (w whereHelperstring) GT(x string) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.GT, x) }
+func (w whereHelperstring) GTE(x string) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.GTE, x) }
+func (w whereHelperstring) IN(slice []string) qm.QueryMod {
 	values := make([]interface{}, 0, len(slice))
 	for _, value := range slice {
 		values = append(values, value)
 	}
 	return qm.WhereIn(fmt.Sprintf("%s IN ?", w.field), values...)
 }
-func (w whereHelperuint) NIN(slice []uint) qm.QueryMod {
+func (w whereHelperstring) NIN(slice []string) qm.QueryMod {
 	values := make([]interface{}, 0, len(slice))
 	for _, value := range slice {
 		values = append(values, value)
@@ -105,40 +105,40 @@ func (w whereHelpernull_String) GTE(x null.String) qm.QueryMod {
 func (w whereHelpernull_String) IsNull() qm.QueryMod    { return qmhelper.WhereIsNull(w.field) }
 func (w whereHelpernull_String) IsNotNull() qm.QueryMod { return qmhelper.WhereIsNotNull(w.field) }
 
-type whereHelpernull_Float32 struct{ field string }
+type whereHelpernull_Float64 struct{ field string }
 
-func (w whereHelpernull_Float32) EQ(x null.Float32) qm.QueryMod {
+func (w whereHelpernull_Float64) EQ(x null.Float64) qm.QueryMod {
 	return qmhelper.WhereNullEQ(w.field, false, x)
 }
-func (w whereHelpernull_Float32) NEQ(x null.Float32) qm.QueryMod {
+func (w whereHelpernull_Float64) NEQ(x null.Float64) qm.QueryMod {
 	return qmhelper.WhereNullEQ(w.field, true, x)
 }
-func (w whereHelpernull_Float32) LT(x null.Float32) qm.QueryMod {
+func (w whereHelpernull_Float64) LT(x null.Float64) qm.QueryMod {
 	return qmhelper.Where(w.field, qmhelper.LT, x)
 }
-func (w whereHelpernull_Float32) LTE(x null.Float32) qm.QueryMod {
+func (w whereHelpernull_Float64) LTE(x null.Float64) qm.QueryMod {
 	return qmhelper.Where(w.field, qmhelper.LTE, x)
 }
-func (w whereHelpernull_Float32) GT(x null.Float32) qm.QueryMod {
+func (w whereHelpernull_Float64) GT(x null.Float64) qm.QueryMod {
 	return qmhelper.Where(w.field, qmhelper.GT, x)
 }
-func (w whereHelpernull_Float32) GTE(x null.Float32) qm.QueryMod {
+func (w whereHelpernull_Float64) GTE(x null.Float64) qm.QueryMod {
 	return qmhelper.Where(w.field, qmhelper.GTE, x)
 }
 
-func (w whereHelpernull_Float32) IsNull() qm.QueryMod    { return qmhelper.WhereIsNull(w.field) }
-func (w whereHelpernull_Float32) IsNotNull() qm.QueryMod { return qmhelper.WhereIsNotNull(w.field) }
+func (w whereHelpernull_Float64) IsNull() qm.QueryMod    { return qmhelper.WhereIsNull(w.field) }
+func (w whereHelpernull_Float64) IsNotNull() qm.QueryMod { return qmhelper.WhereIsNotNull(w.field) }
 
 var EmployeeWhere = struct {
-	ID     whereHelperuint
+	ID     whereHelperstring
 	Login  whereHelpernull_String
 	Name   whereHelpernull_String
-	Salary whereHelpernull_Float32
+	Salary whereHelpernull_Float64
 }{
-	ID:     whereHelperuint{field: "`employees`.`id`"},
+	ID:     whereHelperstring{field: "`employees`.`id`"},
 	Login:  whereHelpernull_String{field: "`employees`.`login`"},
 	Name:   whereHelpernull_String{field: "`employees`.`name`"},
-	Salary: whereHelpernull_Float32{field: "`employees`.`salary`"},
+	Salary: whereHelpernull_Float64{field: "`employees`.`salary`"},
 }
 
 // EmployeeRels is where relationship names are stored.
@@ -159,8 +159,8 @@ type employeeL struct{}
 
 var (
 	employeeAllColumns            = []string{"id", "login", "name", "salary"}
-	employeeColumnsWithoutDefault = []string{"login", "name", "salary"}
-	employeeColumnsWithDefault    = []string{"id"}
+	employeeColumnsWithoutDefault = []string{"id", "login", "name", "salary"}
+	employeeColumnsWithDefault    = []string{}
 	employeePrimaryKeyColumns     = []string{"id"}
 	employeeGeneratedColumns      = []string{}
 )
@@ -196,31 +196,6 @@ var (
 	_ = qmhelper.Where
 )
 
-// OneG returns a single employee record from the query using the global executor.
-func (q employeeQuery) OneG() (*Employee, error) {
-	return q.One(boil.GetDB())
-}
-
-// OneGP returns a single employee record from the query using the global executor, and panics on error.
-func (q employeeQuery) OneGP() *Employee {
-	o, err := q.One(boil.GetDB())
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return o
-}
-
-// OneP returns a single employee record from the query, and panics on error.
-func (q employeeQuery) OneP(exec boil.Executor) *Employee {
-	o, err := q.One(exec)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return o
-}
-
 // One returns a single employee record from the query.
 func (q employeeQuery) One(exec boil.Executor) (*Employee, error) {
 	o := &Employee{}
@@ -238,31 +213,6 @@ func (q employeeQuery) One(exec boil.Executor) (*Employee, error) {
 	return o, nil
 }
 
-// AllG returns all Employee records from the query using the global executor.
-func (q employeeQuery) AllG() (EmployeeSlice, error) {
-	return q.All(boil.GetDB())
-}
-
-// AllGP returns all Employee records from the query using the global executor, and panics on error.
-func (q employeeQuery) AllGP() EmployeeSlice {
-	o, err := q.All(boil.GetDB())
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return o
-}
-
-// AllP returns all Employee records from the query, and panics on error.
-func (q employeeQuery) AllP(exec boil.Executor) EmployeeSlice {
-	o, err := q.All(exec)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return o
-}
-
 // All returns all Employee records from the query.
 func (q employeeQuery) All(exec boil.Executor) (EmployeeSlice, error) {
 	var o []*Employee
@@ -273,31 +223,6 @@ func (q employeeQuery) All(exec boil.Executor) (EmployeeSlice, error) {
 	}
 
 	return o, nil
-}
-
-// CountG returns the count of all Employee records in the query using the global executor
-func (q employeeQuery) CountG() (int64, error) {
-	return q.Count(boil.GetDB())
-}
-
-// CountGP returns the count of all Employee records in the query using the global executor, and panics on error.
-func (q employeeQuery) CountGP() int64 {
-	c, err := q.Count(boil.GetDB())
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return c
-}
-
-// CountP returns the count of all Employee records in the query, and panics on error.
-func (q employeeQuery) CountP(exec boil.Executor) int64 {
-	c, err := q.Count(exec)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return c
 }
 
 // Count returns the count of all Employee records in the query.
@@ -313,31 +238,6 @@ func (q employeeQuery) Count(exec boil.Executor) (int64, error) {
 	}
 
 	return count, nil
-}
-
-// ExistsG checks if the row exists in the table using the global executor.
-func (q employeeQuery) ExistsG() (bool, error) {
-	return q.Exists(boil.GetDB())
-}
-
-// ExistsGP checks if the row exists in the table using the global executor, and panics on error.
-func (q employeeQuery) ExistsGP() bool {
-	e, err := q.Exists(boil.GetDB())
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return e
-}
-
-// ExistsP checks if the row exists in the table, and panics on error.
-func (q employeeQuery) ExistsP(exec boil.Executor) bool {
-	e, err := q.Exists(exec)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return e
 }
 
 // Exists checks if the row exists in the table.
@@ -367,34 +267,9 @@ func Employees(mods ...qm.QueryMod) employeeQuery {
 	return employeeQuery{q}
 }
 
-// FindEmployeeG retrieves a single record by ID.
-func FindEmployeeG(iD uint, selectCols ...string) (*Employee, error) {
-	return FindEmployee(boil.GetDB(), iD, selectCols...)
-}
-
-// FindEmployeeP retrieves a single record by ID with an executor, and panics on error.
-func FindEmployeeP(exec boil.Executor, iD uint, selectCols ...string) *Employee {
-	retobj, err := FindEmployee(exec, iD, selectCols...)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return retobj
-}
-
-// FindEmployeeGP retrieves a single record by ID, and panics on error.
-func FindEmployeeGP(iD uint, selectCols ...string) *Employee {
-	retobj, err := FindEmployee(boil.GetDB(), iD, selectCols...)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return retobj
-}
-
 // FindEmployee retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
-func FindEmployee(exec boil.Executor, iD uint, selectCols ...string) (*Employee, error) {
+func FindEmployee(exec boil.Executor, iD string, selectCols ...string) (*Employee, error) {
 	employeeObj := &Employee{}
 
 	sel := "*"
@@ -416,27 +291,6 @@ func FindEmployee(exec boil.Executor, iD uint, selectCols ...string) (*Employee,
 	}
 
 	return employeeObj, nil
-}
-
-// InsertG a single record. See Insert for whitelist behavior description.
-func (o *Employee) InsertG(columns boil.Columns) error {
-	return o.Insert(boil.GetDB(), columns)
-}
-
-// InsertP a single record using an executor, and panics on error. See Insert
-// for whitelist behavior description.
-func (o *Employee) InsertP(exec boil.Executor, columns boil.Columns) {
-	if err := o.Insert(exec, columns); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// InsertGP a single record, and panics on error. See Insert for whitelist
-// behavior description.
-func (o *Employee) InsertGP(columns boil.Columns) {
-	if err := o.Insert(boil.GetDB(), columns); err != nil {
-		panic(boil.WrapErr(err))
-	}
 }
 
 // Insert a single record using an executor.
@@ -493,26 +347,15 @@ func (o *Employee) Insert(exec boil.Executor, columns boil.Columns) error {
 		fmt.Fprintln(boil.DebugWriter, cache.query)
 		fmt.Fprintln(boil.DebugWriter, vals)
 	}
-	result, err := exec.Exec(cache.query, vals...)
+	_, err = exec.Exec(cache.query, vals...)
 
 	if err != nil {
 		return errors.Wrap(err, "models: unable to insert into employees")
 	}
 
-	var lastID int64
 	var identifierCols []interface{}
 
 	if len(cache.retMapping) == 0 {
-		goto CacheNoHooks
-	}
-
-	lastID, err = result.LastInsertId()
-	if err != nil {
-		return ErrSyncFail
-	}
-
-	o.ID = uint(lastID)
-	if lastID != 0 && len(cache.retMapping) == 1 && cache.retMapping[0] == employeeMapping["id"] {
 		goto CacheNoHooks
 	}
 
@@ -537,34 +380,6 @@ CacheNoHooks:
 	}
 
 	return nil
-}
-
-// UpdateG a single Employee record using the global executor.
-// See Update for more documentation.
-func (o *Employee) UpdateG(columns boil.Columns) (int64, error) {
-	return o.Update(boil.GetDB(), columns)
-}
-
-// UpdateP uses an executor to update the Employee, and panics on error.
-// See Update for more documentation.
-func (o *Employee) UpdateP(exec boil.Executor, columns boil.Columns) int64 {
-	rowsAff, err := o.Update(exec, columns)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return rowsAff
-}
-
-// UpdateGP a single Employee record using the global executor. Panics on error.
-// See Update for more documentation.
-func (o *Employee) UpdateGP(columns boil.Columns) int64 {
-	rowsAff, err := o.Update(boil.GetDB(), columns)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return rowsAff
 }
 
 // Update uses an executor to update the Employee.
@@ -626,31 +441,6 @@ func (o *Employee) Update(exec boil.Executor, columns boil.Columns) (int64, erro
 	return rowsAff, nil
 }
 
-// UpdateAllP updates all rows with matching column names, and panics on error.
-func (q employeeQuery) UpdateAllP(exec boil.Executor, cols M) int64 {
-	rowsAff, err := q.UpdateAll(exec, cols)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return rowsAff
-}
-
-// UpdateAllG updates all rows with the specified column values.
-func (q employeeQuery) UpdateAllG(cols M) (int64, error) {
-	return q.UpdateAll(boil.GetDB(), cols)
-}
-
-// UpdateAllGP updates all rows with the specified column values, and panics on error.
-func (q employeeQuery) UpdateAllGP(cols M) int64 {
-	rowsAff, err := q.UpdateAll(boil.GetDB(), cols)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return rowsAff
-}
-
 // UpdateAll updates all rows with the specified column values.
 func (q employeeQuery) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	queries.SetUpdate(q.Query, cols)
@@ -666,31 +456,6 @@ func (q employeeQuery) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 	}
 
 	return rowsAff, nil
-}
-
-// UpdateAllG updates all rows with the specified column values.
-func (o EmployeeSlice) UpdateAllG(cols M) (int64, error) {
-	return o.UpdateAll(boil.GetDB(), cols)
-}
-
-// UpdateAllGP updates all rows with the specified column values, and panics on error.
-func (o EmployeeSlice) UpdateAllGP(cols M) int64 {
-	rowsAff, err := o.UpdateAll(boil.GetDB(), cols)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return rowsAff
-}
-
-// UpdateAllP updates all rows with the specified column values, and panics on error.
-func (o EmployeeSlice) UpdateAllP(exec boil.Executor, cols M) int64 {
-	rowsAff, err := o.UpdateAll(exec, cols)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return rowsAff
 }
 
 // UpdateAll updates all rows with the specified column values, using an executor.
@@ -738,26 +503,6 @@ func (o EmployeeSlice) UpdateAll(exec boil.Executor, cols M) (int64, error) {
 		return 0, errors.Wrap(err, "models: unable to retrieve rows affected all in update all employee")
 	}
 	return rowsAff, nil
-}
-
-// UpsertG attempts an insert, and does an update or ignore on conflict.
-func (o *Employee) UpsertG(updateColumns, insertColumns boil.Columns) error {
-	return o.Upsert(boil.GetDB(), updateColumns, insertColumns)
-}
-
-// UpsertGP attempts an insert, and does an update or ignore on conflict. Panics on error.
-func (o *Employee) UpsertGP(updateColumns, insertColumns boil.Columns) {
-	if err := o.Upsert(boil.GetDB(), updateColumns, insertColumns); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// UpsertP attempts an insert using an executor, and does an update or ignore on conflict.
-// UpsertP panics on error.
-func (o *Employee) UpsertP(exec boil.Executor, updateColumns, insertColumns boil.Columns) {
-	if err := o.Upsert(exec, updateColumns, insertColumns); err != nil {
-		panic(boil.WrapErr(err))
-	}
 }
 
 var mySQLEmployeeUniqueColumns = []string{
@@ -854,27 +599,16 @@ func (o *Employee) Upsert(exec boil.Executor, updateColumns, insertColumns boil.
 		fmt.Fprintln(boil.DebugWriter, cache.query)
 		fmt.Fprintln(boil.DebugWriter, vals)
 	}
-	result, err := exec.Exec(cache.query, vals...)
+	_, err = exec.Exec(cache.query, vals...)
 
 	if err != nil {
 		return errors.Wrap(err, "models: unable to upsert for employees")
 	}
 
-	var lastID int64
 	var uniqueMap []uint64
 	var nzUniqueCols []interface{}
 
 	if len(cache.retMapping) == 0 {
-		goto CacheNoHooks
-	}
-
-	lastID, err = result.LastInsertId()
-	if err != nil {
-		return ErrSyncFail
-	}
-
-	o.ID = uint(lastID)
-	if lastID != 0 && len(cache.retMapping) == 1 && cache.retMapping[0] == employeeMapping["id"] {
 		goto CacheNoHooks
 	}
 
@@ -901,36 +635,6 @@ CacheNoHooks:
 	}
 
 	return nil
-}
-
-// DeleteG deletes a single Employee record.
-// DeleteG will match against the primary key column to find the record to delete.
-func (o *Employee) DeleteG() (int64, error) {
-	return o.Delete(boil.GetDB())
-}
-
-// DeleteP deletes a single Employee record with an executor.
-// DeleteP will match against the primary key column to find the record to delete.
-// Panics on error.
-func (o *Employee) DeleteP(exec boil.Executor) int64 {
-	rowsAff, err := o.Delete(exec)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return rowsAff
-}
-
-// DeleteGP deletes a single Employee record.
-// DeleteGP will match against the primary key column to find the record to delete.
-// Panics on error.
-func (o *Employee) DeleteGP() int64 {
-	rowsAff, err := o.Delete(boil.GetDB())
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return rowsAff
 }
 
 // Delete deletes a single Employee record with an executor.
@@ -960,30 +664,6 @@ func (o *Employee) Delete(exec boil.Executor) (int64, error) {
 	return rowsAff, nil
 }
 
-func (q employeeQuery) DeleteAllG() (int64, error) {
-	return q.DeleteAll(boil.GetDB())
-}
-
-// DeleteAllP deletes all rows, and panics on error.
-func (q employeeQuery) DeleteAllP(exec boil.Executor) int64 {
-	rowsAff, err := q.DeleteAll(exec)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return rowsAff
-}
-
-// DeleteAllGP deletes all rows, and panics on error.
-func (q employeeQuery) DeleteAllGP() int64 {
-	rowsAff, err := q.DeleteAll(boil.GetDB())
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return rowsAff
-}
-
 // DeleteAll deletes all matching rows.
 func (q employeeQuery) DeleteAll(exec boil.Executor) (int64, error) {
 	if q.Query == nil {
@@ -1003,31 +683,6 @@ func (q employeeQuery) DeleteAll(exec boil.Executor) (int64, error) {
 	}
 
 	return rowsAff, nil
-}
-
-// DeleteAllG deletes all rows in the slice.
-func (o EmployeeSlice) DeleteAllG() (int64, error) {
-	return o.DeleteAll(boil.GetDB())
-}
-
-// DeleteAllP deletes all rows in the slice, using an executor, and panics on error.
-func (o EmployeeSlice) DeleteAllP(exec boil.Executor) int64 {
-	rowsAff, err := o.DeleteAll(exec)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return rowsAff
-}
-
-// DeleteAllGP deletes all rows in the slice, and panics on error.
-func (o EmployeeSlice) DeleteAllGP() int64 {
-	rowsAff, err := o.DeleteAll(boil.GetDB())
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return rowsAff
 }
 
 // DeleteAll deletes all rows in the slice, using an executor.
@@ -1062,29 +717,6 @@ func (o EmployeeSlice) DeleteAll(exec boil.Executor) (int64, error) {
 	return rowsAff, nil
 }
 
-// ReloadG refetches the object from the database using the primary keys.
-func (o *Employee) ReloadG() error {
-	if o == nil {
-		return errors.New("models: no Employee provided for reload")
-	}
-
-	return o.Reload(boil.GetDB())
-}
-
-// ReloadP refetches the object from the database with an executor. Panics on error.
-func (o *Employee) ReloadP(exec boil.Executor) {
-	if err := o.Reload(exec); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// ReloadGP refetches the object from the database and panics on error.
-func (o *Employee) ReloadGP() {
-	if err := o.Reload(boil.GetDB()); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
 // Reload refetches the object from the database
 // using the primary keys with an executor.
 func (o *Employee) Reload(exec boil.Executor) error {
@@ -1095,34 +727,6 @@ func (o *Employee) Reload(exec boil.Executor) error {
 
 	*o = *ret
 	return nil
-}
-
-// ReloadAllG refetches every row with matching primary key column values
-// and overwrites the original object slice with the newly updated slice.
-func (o *EmployeeSlice) ReloadAllG() error {
-	if o == nil {
-		return errors.New("models: empty EmployeeSlice provided for reload all")
-	}
-
-	return o.ReloadAll(boil.GetDB())
-}
-
-// ReloadAllP refetches every row with matching primary key column values
-// and overwrites the original object slice with the newly updated slice.
-// Panics on error.
-func (o *EmployeeSlice) ReloadAllP(exec boil.Executor) {
-	if err := o.ReloadAll(exec); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
-// ReloadAllGP refetches every row with matching primary key column values
-// and overwrites the original object slice with the newly updated slice.
-// Panics on error.
-func (o *EmployeeSlice) ReloadAllGP() {
-	if err := o.ReloadAll(boil.GetDB()); err != nil {
-		panic(boil.WrapErr(err))
-	}
 }
 
 // ReloadAll refetches every row with matching primary key column values
@@ -1154,33 +758,8 @@ func (o *EmployeeSlice) ReloadAll(exec boil.Executor) error {
 	return nil
 }
 
-// EmployeeExistsG checks if the Employee row exists.
-func EmployeeExistsG(iD uint) (bool, error) {
-	return EmployeeExists(boil.GetDB(), iD)
-}
-
-// EmployeeExistsP checks if the Employee row exists. Panics on error.
-func EmployeeExistsP(exec boil.Executor, iD uint) bool {
-	e, err := EmployeeExists(exec, iD)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return e
-}
-
-// EmployeeExistsGP checks if the Employee row exists. Panics on error.
-func EmployeeExistsGP(iD uint) bool {
-	e, err := EmployeeExists(boil.GetDB(), iD)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return e
-}
-
 // EmployeeExists checks if the Employee row exists.
-func EmployeeExists(exec boil.Executor, iD uint) (bool, error) {
+func EmployeeExists(exec boil.Executor, iD string) (bool, error) {
 	var exists bool
 	sql := "select exists(select 1 from `employees` where `id`=? limit 1)"
 

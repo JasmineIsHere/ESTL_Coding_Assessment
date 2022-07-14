@@ -1,10 +1,11 @@
-no-auto-timestamps=false
 no-hooks=true
 no-tests=true
-add-global-variants=true
-add-panic-variants=true
+add-global-variants=false
+add-panic-variants=false
 no-context=true
 no-rows-affected=false
+no-auto-timestamps=false
+no-back-referencing=true
 
 [mysql]
 dbname="estl"
