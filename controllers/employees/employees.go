@@ -35,81 +35,23 @@ func NewHandler(employeeDAO daos.EmployeesDAO) *employeeHandler {
 
 func (h *employeeHandler) RouteGroup(r *gin.Engine) {
 	rg := r.Group("/users")
-	rg.POST("/upload", h.uploadCSV)
+	rg.DELETE("/:empID", h.delete)
 	rg.GET("", h.get)
+	rg.GET("/:empID", h.getByID)
+	rg.POST("/upload", h.uploadCSV)
+	rg.POST("", h.create)
+	rg.PUT("/:empID", h.update)
+
 }
 
-func (h *employeeHandler) uploadCSV(c *gin.Context) {
-	form, _ := c.MultipartForm()
-	files := form.File["file"]
-
-	var employeesAdded int
-	for _, file := range files {
-		csv, err := file.Open()
-		if err != nil {
-			c.Error(err)
-			c.JSON(http.StatusBadRequest, c.Errors.Last())
-			return
-		}
-		success, err := h.ProcessCSV(csv)
-		employeesAdded += success
-
-		if err != nil {
-			c.Error(err)
-			c.JSON(http.StatusBadRequest, c.Errors.Last())
-			return
-		}
-		csv.Close()
-	}
-	c.JSON(http.StatusOK, gin.H{"message": fmt.Sprintf("Number of employees inserted : %v", employeesAdded)})
-}
-
-func (h *employeeHandler) ProcessCSV(file multipart.File) (int, error) {
-	br := bufio.NewReader(file)
-	employeesAdded := 0
-
-	if err := db.WithTxn(func(txn boil.Transactor) (err error) {
-		for {
-			s, eofErr := br.ReadString('\n')
-			if eofErr != nil && !errors.Is(eofErr, io.EOF) {
-				return eofErr
-			}
-
-			if len(s) > 0 && s[0] != '#' {
-				cols := strings.Split(s, ",")
-
-				if len(cols) != 4 {
-					return errors.New(fmt.Sprintf("Missing employee fields: ID, login, name and salary fields are all required"))
-				}
-
-				salary, err := strconv.ParseFloat(strings.TrimSuffix(cols[3], "\n"), 64)
-				if err != nil || salary < 0 {
-					return errors.New(fmt.Sprintf("Invalid employee field: Salary should be a decimal that is > 0.0 for employee where id = %v", cols[0]))
-				}
-
-				if err := h.employeesDAO.AddEmployee(txn, models.Employee{
-					ID:     cols[0],
-					Login:  cols[1],
-					Name:   cols[2],
-					Salary: null.Float64From(salary),
-				}); err != nil {
-					return err
-				}
-				employeesAdded++
-			}
-			if errors.Is(eofErr, io.EOF) {
-				break
-			}
-		}
+func (h *employeeHandler) delete(c *gin.Context) {
+	empID := c.Param("empID")
+	if err := h.employeesDAO.DeleteEmployee(boil.GetDB(), empID); err != nil {
+		c.Error(err)
+		c.JSON(http.StatusBadRequest, c.Errors.Last())
 		return
-	}); err != nil {
-		return 0, err
 	}
-	if employeesAdded == 0 {
-		return 0, errors.New(fmt.Sprintf("Employees Added is 0 : empty file was uploaded"))
-	}
-
-	return employeesAdded, nil
+	c.JSON(http.StatusOK, gin.H{"message": fmt.Sprintf("Employee with ID %v was deleted successfully", empID)})
 }
 
 func (h *employeeHandler) get(c *gin.Context) {
@@ -207,4 +149,130 @@ func (h *employeeHandler) get(c *gin.Context) {
 		Results: employeeList,
 	}
 	c.JSON(http.StatusOK, &response)
+}
+
+func (h *employeeHandler) getByID(c *gin.Context) {
+	empID := c.Param("empID")
+	employee, err := h.employeesDAO.GetByID(boil.GetDB(), empID)
+	if err != nil {
+		c.Error(err)
+		c.JSON(http.StatusBadRequest, c.Errors.Last())
+		return
+	}
+	employeeBean := domains.EmployeeReqResp{
+		Name:   employee.Name,
+		Login:  employee.Login,
+		Salary: employee.Salary.Float64,
+	}
+	c.JSON(http.StatusOK, employeeBean)
+}
+
+func (h *employeeHandler) create(c *gin.Context) {
+	newEmployee := domains.Employee{}
+	if err := c.BindJSON(&newEmployee); err != nil {
+		c.Error(err)
+		c.JSON(http.StatusBadRequest, c.Errors.Last())
+		return
+	}
+	if err := h.employeesDAO.AddEmployee(boil.GetDB(), models.Employee{
+		ID:     newEmployee.ID,
+		Name:   newEmployee.Name,
+		Login:  newEmployee.Login,
+		Salary: null.Float64From(newEmployee.Salary),
+	}); err != nil {
+		c.Error(err)
+		c.JSON(http.StatusBadRequest, c.Errors.Last())
+		return
+	}
+	c.JSON(http.StatusOK, newEmployee)
+}
+
+func (h *employeeHandler) update(c *gin.Context) {
+	empID := c.Param("empID")
+
+	updatedEmployee := domains.EmployeeReqResp{}
+	if err := c.BindJSON(&updatedEmployee); err != nil {
+		c.Error(err)
+		c.JSON(http.StatusBadRequest, c.Errors.Last())
+		return
+	}
+	if err := h.employeesDAO.UpdateEmployee(boil.GetDB(), updatedEmployee, empID); err != nil {
+		c.Error(err)
+		c.JSON(http.StatusBadRequest, c.Errors.Last())
+		return
+	}
+	c.JSON(http.StatusOK, updatedEmployee)
+}
+
+func (h *employeeHandler) uploadCSV(c *gin.Context) {
+	form, _ := c.MultipartForm()
+	files := form.File["file"]
+
+	var employeesAdded int
+	for _, file := range files {
+		csv, err := file.Open()
+		if err != nil {
+			c.Error(err)
+			c.JSON(http.StatusBadRequest, c.Errors.Last())
+			return
+		}
+		success, err := h.ProcessCSV(csv)
+		employeesAdded += success
+
+		if err != nil {
+			c.Error(err)
+			c.JSON(http.StatusBadRequest, c.Errors.Last())
+			return
+		}
+		csv.Close()
+	}
+	c.JSON(http.StatusOK, gin.H{"message": fmt.Sprintf("Number of employees inserted : %v", employeesAdded)})
+}
+
+func (h *employeeHandler) ProcessCSV(file multipart.File) (int, error) {
+	br := bufio.NewReader(file)
+	employeesAdded := 0
+
+	if err := db.WithTxn(func(txn boil.Transactor) (err error) {
+		for {
+			s, eofErr := br.ReadString('\n')
+			if eofErr != nil && !errors.Is(eofErr, io.EOF) {
+				return eofErr
+			}
+
+			if len(s) > 0 && s[0] != '#' {
+				cols := strings.Split(s, ",")
+
+				if len(cols) != 4 {
+					return errors.New(fmt.Sprintf("Missing employee fields: ID, login, name and salary fields are all required"))
+				}
+
+				salary, err := strconv.ParseFloat(strings.TrimSuffix(cols[3], "\n"), 64)
+				if err != nil || salary < 0 {
+					return errors.New(fmt.Sprintf("Invalid employee field: Salary should be a decimal that is > 0.0 for employee where id = %v", cols[0]))
+				}
+
+				if err := h.employeesDAO.UpsertEmployee(txn, models.Employee{
+					ID:     cols[0],
+					Login:  cols[1],
+					Name:   cols[2],
+					Salary: null.Float64From(salary),
+				}); err != nil {
+					return err
+				}
+				employeesAdded++
+			}
+			if errors.Is(eofErr, io.EOF) {
+				break
+			}
+		}
+		return
+	}); err != nil {
+		return 0, err
+	}
+	if employeesAdded == 0 {
+		return 0, errors.New(fmt.Sprintf("Employees Added is 0 : empty file was uploaded"))
+	}
+
+	return employeesAdded, nil
 }
